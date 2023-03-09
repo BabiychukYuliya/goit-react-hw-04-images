@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import { fetchQuery } from '../api/api';
 import ImageGallery from './ImageGallery/ImageGallery';
@@ -7,70 +7,86 @@ import Modal from './Modal/Modal';
 import Loader from './Loader/Loader';
 import Button from './Button/Button';
 
-export class App extends Component {
-  state = {
-    imageName: '',
-    loading: false,
-    items: [],
-    showModal: false,
-    largeImageURL: '',
-    showBtn: false,
+export default function App() {
+  const [imageName, setImageName] = useState('');
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showBtn, setShowBtn] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    if (!imageName) {
+      return;
+    }
+    // setLoading(true);
+    fetchQuery(imageName, page);
+  }, [imageName, page]);
+
+ const handleFormSearch = async (imageName, page = 1) => {
+    setLoading(true);
+   const list = await fetchQuery(imageName, page);
+   setItems(list.hits);
+   setImageName(imageName);
+   setLoading(false);
+   setShowBtn(true);
+    // this.setState({
+    //   items: list.hits,
+    //   imageName,
+    //   page,
+    //   loading: false,
+    //   showBtn: true,
+    // });
   };
 
-  handleFormSearch = async (imageName, page = 1) => {
-    this.setState({ loading: true });
-    const list = await fetchQuery(imageName, page);
-    this.setState({
-      items: list.hits,
-      imageName,
-      page,
-      loading: false,
-      showBtn: true,
-    });
-  };
+ const onLoadMore = () => {
+   setLoading(true);
+   setPage(prevPage => prevPage + 1);
 
-  onLoadMore = async () => {
-    await this.setState(state => ({ page: (state.page += 1), loading: true }));
-
-    const { imageName, page } = this.state;
-    const resp = await fetchQuery(imageName, page);
-
-    const total = resp.totalHits;
-    const noRenderImage = total - 12 * this.state.page;
+   fetchQuery(imageName, page).then(resp => {
+     const total = resp.totalHits;
+     const noRenderImage = total - 12 * page;
 
     noRenderImage > 0
-      ? this.setState({ showBtn: true })
-      : this.setState({ showBtn: false });
+      ? setShowBtn(true)
+       : setShowBtn(false);
+     
+     setItems(prevState => [...prevState, ...resp.hits]);
+    })
 
-    this.setState(state => ({
-      items: [...state.items, ...resp.hits],
-      loading: false,
-    }));
+   setLoading(false);
   };
 
-  onClickImage = url => {
-    this.setState({ showModal: true, largeImageURL: url });
+
+
+
+  //   const handleFormSearch = imageName => {
+  //   setImageName(imageName);
+  //   // setPicsArr([]);
+  //   setPage(1);
+  // };
+
+
+  const onClickImage = url => {
+    setShowModal(true);
+    setLargeImageURL(url);
   };
 
-  onModalClose = () => {
-    this.setState({ showModal: false, largeImageURL: '' });
+  const onModalClose = () => {
+    setShowModal(false);
+    setLargeImageURL('');
   };
 
-  render() {
-    const { items, showModal, largeImageURL, loading, showBtn } = this.state;
-    return (
-      <div>
-        <Searchbar onSearch={this.handleFormSearch} />
-        <ImageGallery list={items} onClickImage={this.onClickImage} />
-        {showModal && (
-          <Modal
-            largeImageURL={largeImageURL}
-            onModalClose={this.onModalClose}
-          />
-        )}
-        {loading && <Loader />}
-        {showBtn && <Button onClick={this.onLoadMore} />}
-      </div>
-    );
-  }
+  return (
+    <div>
+      <Searchbar onSearch={handleFormSearch} />
+      <ImageGallery list={items} onClickImage={onClickImage} />
+      {showModal && (
+        <Modal largeImageURL={largeImageURL} onModalClose={onModalClose} />
+      )}
+      {loading && <Loader />}
+      {showBtn && <Button onClick={onLoadMore} />}
+    </div>
+  );
 }
