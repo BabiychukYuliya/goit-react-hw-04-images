@@ -1,6 +1,6 @@
 import {useState } from 'react';
 
-export default function Searchbar({ onSearch }) {
+export const Searchbar =({ onSearch }) => {
   
   const [imageName, setImageName] = useState('');
 
