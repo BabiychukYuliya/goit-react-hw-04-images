@@ -21,37 +21,36 @@ export default function App() {
       return;
     }
     // setLoading(true);
-    fetchQuery(imageName, page);
+    handleFormSearch(imageName, page);
   }, [imageName, page]);
 
- const handleFormSearch = async (imageName, page = 1) => {
+  const handleFormSearch = async (imageName, page) => {
     setLoading(true);
-   const list = await fetchQuery(imageName, page);
-   setItems(list.hits);
-   setImageName(imageName);
-   setLoading(false);
-   setShowBtn(true);
+    const list = await fetchQuery(imageName, page);
+    setItems(prevState => [...prevState, ...list.hits]);
+    setImageName(imageName);
+    setLoading(false);
+    const total = list.totalHits;
+    const noRenderImage = total - 12 * page;
 
+    noRenderImage > 0 ? setShowBtn(true) : setShowBtn(false);
   };
 
- const onLoadMore = () => {
-   setLoading(true);
-   setPage(prevPage => prevPage + 1);
+  const onLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
 
-   fetchQuery(imageName, page).then(resp => {
-     const total = resp.totalHits;
-     const noRenderImage = total - 12 * page;
+    //  fetchQuery(imageName, page).then(resp => {
+    //    const total = resp.totalHits;
+    //    const noRenderImage = total - 12 * page;
 
-    noRenderImage > 0
-      ? setShowBtn(true)
-       : setShowBtn(false);
-     
-     setItems(prevState => [...prevState, ...resp.hits]);
-    })
-   setLoading(false);
- 
+    //   noRenderImage > 0
+    //     ? setShowBtn(true)
+    //      : setShowBtn(false);
+
+    //    setItems(prevState => [...prevState, ...resp.hits]);
+    //   })
+    //  setLoading(false);
   };
-
 
   const onClickImage = url => {
     setShowModal(true);
