@@ -30,7 +30,11 @@ import { Searchbar } from './Searchbar/Searchbar';
 
 	  const handleFormSearch = async (imageName, page) => {
       setLoading(true);
-	    const list = await fetchQuery(imageName, page);
+      const list = await fetchQuery(imageName, page);
+      if (page === 1) {
+        setItems(list.hits);
+        setLoading(false);
+      } else
 	    setItems(prevState => [...prevState, ...list.hits]);
 	    setImageName(imageName);
 	    setLoading(false);
