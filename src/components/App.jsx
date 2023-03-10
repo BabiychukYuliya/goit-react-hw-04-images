@@ -31,13 +31,7 @@ export default function App() {
    setImageName(imageName);
    setLoading(false);
    setShowBtn(true);
-    // this.setState({
-    //   items: list.hits,
-    //   imageName,
-    //   page,
-    //   loading: false,
-    //   showBtn: true,
-    // });
+
   };
 
  const onLoadMore = () => {
@@ -54,18 +48,9 @@ export default function App() {
      
      setItems(prevState => [...prevState, ...resp.hits]);
     })
-
    setLoading(false);
+ 
   };
-
-
-
-
-  //   const handleFormSearch = imageName => {
-  //   setImageName(imageName);
-  //   // setPicsArr([]);
-  //   setPage(1);
-  // };
 
 
   const onClickImage = url => {
